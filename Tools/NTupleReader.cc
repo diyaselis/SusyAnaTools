@@ -129,14 +129,11 @@ void NTupleReader::registerBranch(TBranch * const branch) const
     std::string type(branch->GetTitle());
     std::string name(branch->GetName());
 
-    if(type.compare(name) == 0)
+    TObjArray *lol = branch->GetListOfLeaves();
+    if (lol->GetEntries() >= 1) 
     {
-        TObjArray *lol = branch->GetListOfLeaves();
-        if (lol->GetEntries() == 1) 
-        {
-            TLeaf *leaf = (TLeaf*)lol->UncheckedAt(0);
-            type = leaf->GetTypeName();
-        }
+      TLeaf *leaf = (TLeaf*)lol->UncheckedAt(0);
+      type = leaf->GetTypeName();
     }
 
     if(type.find("vector<vector") != std::string::npos)
@@ -185,6 +182,13 @@ void NTupleReader::registerBranch(TBranch * const branch) const
         else if(type.find("/L") != std::string::npos) registerBranch<unsigned long>(name);
         else if(type.find("/l") != std::string::npos) registerBranch<long>(name);
         else if(type.find("/b") != std::string::npos) registerBranch<bool>(name);
+        else if(type.find("UInt_t") != std::string::npos) registerBranch<unsigned int>(name);
+        else if(type.find("ULong64_t") != std::string::npos) registerBranch<unsigned long>(name);
+        else if(type.find("UChar_t") != std::string::npos) registerBranch<char>(name);
+        else if(type.find("Float_t") != std::string::npos) registerBranch<float>(name);
+        else if(type.find("Double_t") != std::string::npos) registerBranch<double>(name);
+        else if(type.find("Int_t") != std::string::npos) registerBranch<int>(name);
+        else if(type.find("Bool_t") != std::string::npos) registerBranch<bool>(name);
         else THROW_SATEXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
     }
 }

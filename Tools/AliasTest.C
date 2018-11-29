@@ -15,10 +15,9 @@
 
 int main()
 {
-  char nBase[] = "root://cmseos.fnal.gov//store/user/mkilpatr/13TeV/120917/merged/met-2017b-23jun17_1_ntuple_postproc.root";
+  char nBase[] = "/uscms_data/d3/lpcsusyhad/benwu/Moriond2019/TestNanoAOD/CMSSW_9_4_11_cand1/src/PhysicsTools/NanoSUSY/test/test94X_NANO.root";
 
   TChain *ch = new TChain("Events");
-  //TChain *ch = new TChain("stopTreeMaker/AUX");
 
     size_t t0 = clock();
 
@@ -28,25 +27,34 @@ int main()
         sprintf(chname, nBase, i);
         ch->Add(chname);
     }
+    try
+    {
     NTupleReader tr(ch);
-    StopleAlias alias;
-    tr.setReThrow(false);
-    tr.registerFunction(alias);
-    //std::cout << "NEVTS: " << tr.getNEntries() << std::endl;
+    }
+    catch (SATException &e)
+    {
+      e.print();
+    }
+
+    NTupleReader tr(ch);
+    //StopleAlias alias;
+    //tr.setReThrow(false);
+    //tr.registerFunction(alias);
+    ////std::cout << "NEVTS: " << tr.getNEntries() << std::endl;
 
     while(tr.getNextEvent())
     {
-      if(tr.getEvtNum() == 1)
-      {
-        tr.printTupleMembers();
-        FILE * fout = fopen("NewUCSBNTupleTypes.txt", "w");
-        tr.printTupleMembers(fout);
-        fclose(fout);
-      }
-      if(tr.getEvtNum() > 10)
-        break;
+      //if(tr.getEvtNum() == 1)
+      //{
+        //tr.printTupleMembers();
+        //FILE * fout = fopen("NewUCSBNTupleTypes.txt", "w");
+        //tr.printTupleMembers(fout);
+        //fclose(fout);
+      //}
+      //if(tr.getEvtNum() > 10)
+        //break;
 
-      std::cout << "MET " << tr.getVar<float>("met")  <<" met_pt " << tr.getVar<float>("met_pt") << std::endl;
+      std::cout << "MET " << tr.getVar<float>("MET_pt")  <<" met_pt " << tr.getVar<float>("MET_phi") << std::endl;
     }
     ch->Reset();
 }
