@@ -175,6 +175,7 @@ void BaselineVessel::prepareDeepTopTagger()
   // AK4 jet variables
   std::vector<std::string> AK4Variables = {
                                             "qgPtD",                               
+                                            "qgMult",                              
                                             "qgAxis1",                             
                                             "qgAxis2",                             
                                             "recoJetschargedHadronEnergyFraction", 
@@ -199,11 +200,6 @@ void BaselineVessel::prepareDeepTopTagger()
                                           };
   
   ttUtility::ConstAK4Inputs<float> AK4Inputs(*jetsLVec_forTagger, *recoJetsBtag_forTagger);
-  
-  // convert qgMult to float and then add to AK4Inputs
-  const std::vector<int>   &qgMult_i = tr->getVec<int>(UseCleanedJetsVar("qgMult"));
-  const std::vector<float> qgMult_f(qgMult_i.begin(), qgMult_i.end());
-  AK4Inputs.addSupplamentalVector("qgMult", qgMult_f);
   
   // loop over variables and add to AK4Inputs
   for (const auto& variable : AK4Variables)

@@ -39,19 +39,19 @@ private:
         // void cleanJetCollection(const std::string& jetCollectionName, const std::string& objectNameString, const std::vector<std::string>& jetCollectionVariables, const std::string& prefix, const std::string& suffix, bool doDRCleaning, bool doJetCuts)
         
         //                  jetCollectionName, objectNameString,    jetCollectionVariables, prefix,     suffix,               doDRCleaning, doJetCuts
-        cleanJetCollection("jetsLVec",      "gammaLVecPassLooseID", AK4JetVariables_, "",               "_drPhotonCleaned",           true, false);
+        cleanJetCollection("jetsLVec",      "photonLVecPassLooseID", AK4JetVariables_, "",               "_drPhotonCleaned",           true, false);
         cleanJetCollection("jetsLVec",      "cutMuVec;cutElecVec",  AK4JetVariables_, "",               "_drLeptonCleaned",           true, false);
         cleanJetCollection("jetsLVec",      "",                     AK4JetVariables_, "",               "_pt20eta24",                 false, true);
         cleanJetCollection("jetsLVec",      "",                     AK4JetVariables_, "prodJetsNoLep_", "_pt20eta24",                 false, true);
         cleanJetCollection("jetsLVec",      "cutMuVec;cutElecVec",  AK4JetVariables_, "",               "_drLeptonCleaned_pt20eta24", true, true);
-        cleanJetCollection("puppiJetsLVec", "gammaLVecPassLooseID", AK8JetVariables_, "",               "_drPhotonCleaned",           true, false);
+        cleanJetCollection("puppiJetsLVec", "photonLVecPassLooseID", AK8JetVariables_, "",               "_drPhotonCleaned",           true, false);
         cleanJetCollection("puppiJetsLVec", "cutMuVec;cutElecVec",  AK8JetVariables_, "",               "_drLeptonCleaned",           true, false);
         cleanJetCollection("puppiJetsLVec", "",                     AK8JetVariables_, "",               "_pt20eta24",                 false, true);
         cleanJetCollection("puppiJetsLVec", "",                     AK8JetVariables_, "prodJetsNoLep_", "_pt20eta24",                 false, true);
         cleanJetCollection("puppiJetsLVec", "cutMuVec;cutElecVec",  AK8JetVariables_, "",               "_drLeptonCleaned_pt20eta24", true, true);
         
-        //cleanJetCollection("jetsLVec",      "gammaLVecPassLooseID", AK4JetVariables_, "prodJetsNoLep_", "_drPhotonCleaned");
-        //cleanJetCollection("puppiJetsLVec", "gammaLVecPassLooseID", AK8JetVariables_, "prodJetsNoLep_", "_drPhotonCleaned");
+        //cleanJetCollection("jetsLVec",      "photonLVecPassLooseID", AK4JetVariables_, "prodJetsNoLep_", "_drPhotonCleaned");
+        //cleanJetCollection("puppiJetsLVec", "photonLVecPassLooseID", AK8JetVariables_, "prodJetsNoLep_", "_drPhotonCleaned");
     }
 
     template <class type> void cleanVector(std::string vectorName, std::vector<bool> keepJet, const std::string& suffix)
@@ -135,11 +135,6 @@ private:
             else if (jetVariable.compare("puppiAK8SubjetLVec") == 0)
             {
                 cleanVector<std::vector<TLorentzVector>>(prefix + jetVariable, keepJet, suffix);
-            }
-            // int
-            else if (jetVariable.compare("qgMult") == 0)
-            {
-                cleanVector<int>(prefix + jetVariable, keepJet, suffix);
             }
             // float
             else
