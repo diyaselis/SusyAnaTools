@@ -40,8 +40,6 @@ int main(int argc, char *argv[])
         }
     }
     
-    std::cout << "optind = " << optind << std::endl;
-    
     AnaSamples::SampleSet        ss("sampleSets.cfg");
     AnaSamples::SampleCollection sc("sampleCollections.cfg", ss);
 
