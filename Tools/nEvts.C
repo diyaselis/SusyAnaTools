@@ -15,25 +15,32 @@ int main(int argc, char *argv[])
     int opt;
     int option_index = 0;
     static struct option long_options[] = {
-        {"skipData", no_argument, 0, 's'},
-        {"legacy",   no_argument, 0, 'l'}
+        {"skipData",    no_argument, 0, 's'},
+        {"skipWeights", no_argument, 0, 'n'},
+        {"legacy",      no_argument, 0, 'l'}
     };
 
     bool skipData = false;
+    bool skipWeights = false;
     bool legacy = false;
-    while((opt=getopt_long(argc, argv, "sl", long_options, &option_index)) != -1)
+    // snl... Saturday Night Live?
+    while((opt=getopt_long(argc, argv, "snl", long_options, &option_index)) != -1)
     {
         switch(opt)
         {
         case 's':
             skipData = true;
             break;
+        case 'n':
+            skipWeights = true;
+            break;
         case 'l':
             legacy = true;
             break;
         }
     }
-  
+    
+    std::cout << "optind = " << optind << std::endl;
     
     AnaSamples::SampleSet        ss("sampleSets.cfg");
     AnaSamples::SampleCollection sc("sampleCollections.cfg", ss);
@@ -51,6 +58,8 @@ int main(int argc, char *argv[])
     // don't forget to fill keyStrVec
     while(ssSelKey >> buf) keyStrVec.push_back(buf);
     
+    std::cout << "Begin Processing file(s)" << std::endl;
+    // loop over sample set
     for(auto& file : ss) 
     {
         if( !keyStrVec.empty() )
@@ -72,6 +81,10 @@ int main(int argc, char *argv[])
         }
 
         TChain *t = new TChain(file.second.treePath.c_str());
+        if (! t)
+        {
+            std::cout << "ERROR: Unable to open tree for " << file.second.tag << "\t" << file.second.filePath + file.second.fileName << std::endl;
+        }
         file.second.addFilesToChain(t);
     
         //int nEntries = t->GetEntries();
@@ -81,18 +94,24 @@ int main(int argc, char *argv[])
 
         TH1* h3 = new TH1D("h3", "h3", 2, -100000, 100000);
         
-        // weight name for CMSSW8028_2016 ntuples: stored_weight           
-        if (legacy) 
+        if (skipWeights)
         {
-            t->Draw("stored_weight>>h3", "1", "goff");
+            std::cout << "Processing file(s): " << file.second.tag << "\t" << file.second.filePath + file.second.fileName << std::endl;
         }
-        // weight name for prod2016MCv2_NANO_Skim ntuples: genWeight 
         else
         {
-            t->Draw("genWeight>>h3", "1", "goff");
+            // weight name for CMSSW8028_2016 ntuples: stored_weight           
+            if (legacy) 
+            {
+                t->Draw("stored_weight>>h3", "1", "goff");
+            }
+            // weight name for prod2016MCv2_NANO_Skim ntuples: genWeight 
+            else
+            {
+                t->Draw("genWeight>>h3", "1", "goff");
+            }
+            std::cout << "Processing file(s): " << file.second.tag << "\t" << file.second.filePath + file.second.fileName << "\t" << "Neg weigths = " << int(h3->GetBinContent(1)) << ", Pos weights = " << int(h3->GetBinContent(2)) << std::endl;
         }
-        
-        std::cout << "Processing file(s): " << file.second.tag << "\t" << file.second.filePath + file.second.fileName << "\t" << "Neg weigths = " << int(h3->GetBinContent(1)) << ", Pos weights = " << int(h3->GetBinContent(2)) << std::endl;
         
         // delete TH1* and TChain* to avoid memory leaks / save memory / not crash / be safe
         delete h3;
