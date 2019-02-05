@@ -167,20 +167,96 @@ namespace AnaConsts{
 namespace AnaFunctions{
   bool jetPassCuts(const TLorentzVector& jet, const AnaConsts::AccRec& jetCutsArr);
   int countJets(const std::vector<TLorentzVector> &inputJets, const AnaConsts::AccRec& jetCutsArr);
-  int countCSVS(const std::vector<TLorentzVector> &inputJets, const std::vector<float> &inputCSVS, const float cutCSVS, const AnaConsts::AccRec& jetCutsArr, std::vector<unsigned int> *outputIdxs=NULL);
-  std::vector<float> calcDPhi(const std::vector<TLorentzVector> &inputJets, const double metphi, const int nDPhi, const AnaConsts::AccRec& jetCutsArr);
+
+  template<typename FLOAT>
+  int countCSVS(const std::vector<TLorentzVector> &inputJets, const std::vector<FLOAT> &inputCSVS, const float cutCSVS, const AnaConsts::AccRec& jetCutsArr, std::vector<unsigned int> *outputIdxs=NULL)
+  {
+      const float minAbsEta = jetCutsArr.minAbsEta, maxAbsEta = jetCutsArr.maxAbsEta, minPt = jetCutsArr.minPt, maxPt = jetCutsArr.maxPt;
+      int cntNJets =0;
+      for(unsigned int ij=0; ij<inputJets.size(); ij++)
+      {
+          if( !jetPassCuts(inputJets[ij], jetCutsArr) ) continue;
+          if( std::isnan(inputCSVS[ij]) ) continue;
+          if( inputCSVS[ij] > cutCSVS ) 
+          {
+              cntNJets ++;
+              outputIdxs->push_back(ij);
+          }
+      }
+      return cntNJets;
+  }
+
+  template<typename FLOAT = float> 
+  std::vector<FLOAT> calcDPhi(const std::vector<TLorentzVector> &inputJets, const double metphi, const int nDPhi, const AnaConsts::AccRec& jetCutsArr)
+  {
+      const float minAbsEta = jetCutsArr.minAbsEta, maxAbsEta = jetCutsArr.maxAbsEta, minPt = jetCutsArr.minPt, maxPt = jetCutsArr.maxPt;
+      int cntNJets =0;
+      std::vector<FLOAT> outDPhiVec(nDPhi, 999);
+      for(unsigned int ij=0; ij<inputJets.size(); ij++)
+      {
+          if( !jetPassCuts(inputJets[ij], jetCutsArr) ) continue;
+          if( cntNJets < nDPhi )
+          {
+              float perDPhi = fabs(TVector2::Phi_mpi_pi( inputJets[ij].Phi() - metphi ));
+              outDPhiVec[cntNJets] = perDPhi;
+          }
+          cntNJets ++;
+      }
+      return outDPhiVec;
+  }
+
   float calcDeltaT(unsigned int pickedJetIdx, const std::vector<TLorentzVector> &inputJets, const AnaConsts::AccRec& jetCutsArr);
   std::vector<float> calcDPhiN(const std::vector<TLorentzVector> &inputJets, const TLorentzVector &metLVec, const int nDPhi, const AnaConsts::AccRec& jetCutsArr);
   bool passMuon(const TLorentzVector& muon, const float& muonIso, const float& muonMtw, int flagID, const AnaConsts::IsoAccRec& muonsArr);
   bool passMuonAccOnly(const TLorentzVector& muon, const AnaConsts::IsoAccRec& muonsArr);
-  int countMuons(const std::vector<TLorentzVector> &muonsLVec, const std::vector<float> &muonsRelIso, const std::vector<float> &muonsMtw, const std::vector<int> &muonsFlagID, const AnaConsts::IsoAccRec& muonsArr);
+
+  template<typename FLOAT>
+  int countMuons(const std::vector<TLorentzVector> &muonsLVec, const std::vector<FLOAT> &muonsRelIso, const std::vector<FLOAT> &muonsMtw, const std::vector<int> &muonsFlagID, const AnaConsts::IsoAccRec& muonsArr)
+  {
+      int cntNMuons = 0;
+      for(unsigned int im=0; im<muonsLVec.size(); im++)
+      {
+          if(passMuon(muonsLVec[im], muonsRelIso[im], muonsMtw[im], muonsFlagID[im], muonsArr)) cntNMuons ++;
+      }
+      return cntNMuons;
+  }
+
   bool passElectron(const TLorentzVector& elec, const float electronIso, const float electronMtw, bool isEB, int flagID, const AnaConsts::ElecIsoAccRec& elesArr);
   int countOldElectrons(const std::vector<TLorentzVector> &electronsLVec, const std::vector<float> &electronsRelIso, const std::vector<float> &electronsMtw, const std::vector<int> &electronsFlagID, const AnaConsts::ElecIsoAccRec& elesArr);
-  int countElectrons(const std::vector<TLorentzVector> &electronsLVec, const std::vector<float> &electronsRelIso, const std::vector<float> &electronsMtw, const std::vector<unsigned int>& isEBVec, const std::vector<int> &electronsFlagID, const AnaConsts::ElecIsoAccRec& elesArr);
+
+  template<typename FLOAT>
+  int countElectrons(const std::vector<TLorentzVector> &electronsLVec, const std::vector<FLOAT> &electronsRelIso, const std::vector<FLOAT> &electronsMtw, const std::vector<unsigned int>& isEBVec, const std::vector<int> &electronsFlagID, const AnaConsts::ElecIsoAccRec& elesArr)
+  {
+      int cntNElectrons = 0;
+      for(unsigned int ie=0; ie<electronsLVec.size(); ie++)
+      {
+          if(passElectron(electronsLVec[ie], electronsRelIso[ie], electronsMtw[ie], isEBVec[ie], electronsFlagID[ie], elesArr)) cntNElectrons ++;
+      }
+      return cntNElectrons;
+  }
+    
   float getElectronActivity(const TLorentzVector& elec, const std::vector<TLorentzVector>& jetLVec, const std::vector<float>& recoJetschargedHadronEnergyFraction, const AnaConsts::ActRec& elesAct);
   float getMuonActivity(const TLorentzVector& muon, const std::vector<TLorentzVector>& jetLVec, const std::vector<float>& recoJetschargedHadronEnergyFraction, const std::vector<float>& recoJetschargedEmEnergyFraction, const AnaConsts::ActRec& muonsAct);
   bool passIsoTrk(const TLorentzVector& isoTrk, const float isoTrkIso, const float isoTrkMtw, const AnaConsts::IsoAccRec& isoTrksArr);
-  int countIsoTrks(const std::vector<TLorentzVector> &isoTrksLVec, const std::vector<float> &isoTrksIso, const std::vector<float> &isoTrksMtw, const std::vector<int> &isoTrkspdgId);
+
+  template<typename FLOAT>
+  int countIsoTrks(const std::vector<TLorentzVector> &isoTrksLVec, const std::vector<FLOAT> &isoTrksIso, const std::vector<FLOAT> &isoTrksMtw, const std::vector<int> &isoTrkspdgId)
+  {
+      int cntNIsoTrks = 0;
+      for(unsigned int is=0; is<isoTrksLVec.size(); is++)
+      {
+          if( std::abs(isoTrkspdgId[is]) == 11 || std::abs(isoTrkspdgId[is]) == 13 )
+          {
+              if( passIsoTrk(isoTrksLVec[is], isoTrksIso[is], isoTrksMtw[is], AnaConsts::isoLepTrksArr ) ) cntNIsoTrks ++;
+          }
+          if( std::abs(isoTrkspdgId[is]) == 211 )
+          {
+              if( passIsoTrk(isoTrksLVec[is], isoTrksIso[is], isoTrksMtw[is], AnaConsts::isoHadTrksArr ) ) cntNIsoTrks ++;
+          }
+      }
+      return cntNIsoTrks;
+  }
+
   void prepareJetsForTagger(const std::vector<TLorentzVector> &inijetsLVec, const std::vector<float> &inirecoJetsBtag, std::vector<TLorentzVector> &jetsLVec_forTagger, std::vector<float> &recoJetsBtag_forTagger, const std::vector<float>& qgLikelihood = *static_cast<std::vector<float>*>(nullptr), std::vector<float>& qgLikelihood_forTagger = *static_cast<std::vector<float>*>(nullptr));
   void preparecntNJets(const std::vector<TLorentzVector> &inijetsLVec, const std::vector<float> &inirecoJetsBtag, const float cutCSVS, std::vector<int> &cntNJetsVec, std::vector<int> &cntNbJetsVec);
   void preparecalcDPhi(const std::vector<TLorentzVector> &inijetsLVec, const float metphi, std::vector<float> &outDPhiVec);

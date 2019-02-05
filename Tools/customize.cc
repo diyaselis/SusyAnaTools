@@ -21,37 +21,6 @@ namespace AnaFunctions
     return cntNJets;
   }
 
-  int countCSVS(const std::vector<TLorentzVector> &inputJets, const std::vector<float> &inputCSVS, const float cutCSVS, const AnaConsts::AccRec& jetCutsArr,
-      std::vector<unsigned int> *outputIdxs){
-    const float minAbsEta = jetCutsArr.minAbsEta, maxAbsEta = jetCutsArr.maxAbsEta, minPt = jetCutsArr.minPt, maxPt = jetCutsArr.maxPt;
-    int cntNJets =0;
-    for(unsigned int ij=0; ij<inputJets.size(); ij++){
-      if( !jetPassCuts(inputJets[ij], jetCutsArr) ) continue;
-      if( std::isnan(inputCSVS[ij]) ) continue;
-      if( inputCSVS[ij] > cutCSVS ) 
-      {
-        cntNJets ++;
-        outputIdxs->push_back(ij);
-      }
-    }
-    return cntNJets;
-  }
-
-  std::vector<float> calcDPhi(const std::vector<TLorentzVector> &inputJets, const double metphi, const int nDPhi, const AnaConsts::AccRec& jetCutsArr){
-    const float minAbsEta = jetCutsArr.minAbsEta, maxAbsEta = jetCutsArr.maxAbsEta, minPt = jetCutsArr.minPt, maxPt = jetCutsArr.maxPt;
-    int cntNJets =0;
-    std::vector<float> outDPhiVec(nDPhi, 999);
-    for(unsigned int ij=0; ij<inputJets.size(); ij++){
-      if( !jetPassCuts(inputJets[ij], jetCutsArr) ) continue;
-      if( cntNJets < nDPhi ){
-        float perDPhi = fabs(TVector2::Phi_mpi_pi( inputJets[ij].Phi() - metphi ));
-        outDPhiVec[cntNJets] = perDPhi;
-      }
-      cntNJets ++;
-    }
-    return outDPhiVec;
-  }
-
   float calcDeltaT(unsigned int pickedJetIdx, const std::vector<TLorentzVector> &inputJets, const AnaConsts::AccRec& jetCutsArr){
     float deltaT = 0;
     float jres = 0.1;
@@ -105,15 +74,6 @@ namespace AnaFunctions
       && (     maxPt == -1 || permuonpt < maxPt );
   }
 
-  int countMuons(const std::vector<TLorentzVector> &muonsLVec, const std::vector<float> &muonsRelIso, const std::vector<float> &muonsMtw, const std::vector<int> &muonsFlagID, const AnaConsts::IsoAccRec& muonsArr){
-
-    int cntNMuons = 0;
-    for(unsigned int im=0; im<muonsLVec.size(); im++){
-      if(passMuon(muonsLVec[im], muonsRelIso[im], muonsMtw[im], muonsFlagID[im], muonsArr)) cntNMuons ++;
-    }
-    return cntNMuons;
-  }
-
   bool passElectron(const TLorentzVector& elec, const float electronIso, const float electronMtw, bool isEB, int flagID, const AnaConsts::ElecIsoAccRec& elesArr)
   {
     const float minAbsEta = elesArr.minAbsEta, maxAbsEta = elesArr.maxAbsEta, minPt = elesArr.minPt, maxPt = elesArr.maxPt, maxIso = (isEB)?(elesArr.maxIsoEB):(elesArr.maxIsoEE), maxMtw = elesArr.maxMtw;
@@ -142,15 +102,6 @@ namespace AnaFunctions
     int cntNElectrons = 0;
     for(unsigned int ie=0; ie<electronsLVec.size(); ie++){
       if(passElectron(electronsLVec[ie], electronsRelIso[ie], electronsMtw[ie], true, electronsFlagID[ie], elesArr)) cntNElectrons ++;
-    }
-    return cntNElectrons;
-  }
-
-  int countElectrons(const std::vector<TLorentzVector> &electronsLVec, const std::vector<float> &electronsRelIso, const std::vector<float> &electronsMtw, const std::vector<unsigned int>& isEBVec, const std::vector<int> &electronsFlagID, const AnaConsts::ElecIsoAccRec& elesArr){
-
-    int cntNElectrons = 0;
-    for(unsigned int ie=0; ie<electronsLVec.size(); ie++){
-      if(passElectron(electronsLVec[ie], electronsRelIso[ie], electronsMtw[ie], isEBVec[ie], electronsFlagID[ie], elesArr)) cntNElectrons ++;
     }
     return cntNElectrons;
   }
@@ -198,20 +149,6 @@ namespace AnaFunctions
       && (     maxPt == -1 || perisotrkpt < maxPt ) 
       && (    maxIso == -1 || isoTrkIso/perisotrkpt < maxIso )
       && (    maxMtw == -1 || isoTrkMtw < maxMtw );
-  }
-
-  int countIsoTrks(const std::vector<TLorentzVector> &isoTrksLVec, const std::vector<float> &isoTrksIso, const std::vector<float> &isoTrksMtw, const std::vector<int> &isoTrkspdgId){
-
-    int cntNIsoTrks = 0;
-    for(unsigned int is=0; is<isoTrksLVec.size(); is++){
-      if( std::abs(isoTrkspdgId[is]) == 11 || std::abs(isoTrkspdgId[is]) == 13 ){
-        if( passIsoTrk(isoTrksLVec[is], isoTrksIso[is], isoTrksMtw[is], AnaConsts::isoLepTrksArr ) ) cntNIsoTrks ++;
-      }
-      if( std::abs(isoTrkspdgId[is]) == 211 ){
-        if( passIsoTrk(isoTrksLVec[is], isoTrksIso[is], isoTrksMtw[is], AnaConsts::isoHadTrksArr ) ) cntNIsoTrks ++;
-      }
-    }
-    return cntNIsoTrks;
   }
 
   int countIsoLepTrks(const std::vector<TLorentzVector> &isoTrksLVec, const std::vector<float> &isoTrksIso, const std::vector<float> &isoTrksMtw, const std::vector<int> &isoTrkspdgId){
